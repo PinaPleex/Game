@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101225">
+  <title>Kosmiczna Kopalnia</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #101225;
+      color: #f5f4ff;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(ellipse at 50% 37%, rgba(86, 73, 176, .2), transparent 38rem),
+        radial-gradient(circle at 12% 18%, #ffffff8c 0 1px, transparent 1.5px),
+        radial-gradient(circle at 78% 12%, #ffffff75 0 1px, transparent 1.5px),
+        radial-gradient(circle at 87% 68%, #ffffff6b 0 1px, transparent 1.5px),
+        radial-gradient(circle at 24% 76%, #ffffff61 0 1px, transparent 1.5px),
+        #101225;
+      background-size: auto, 190px 190px, 250px 250px, 220px 220px, 280px 280px, auto;
+    }
+
+    button { font: inherit; }
+
+    .game {
+      width: min(1050px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 38px 0 48px;
+    }
+
+    header { text-align: center; margin-bottom: 28px; }
+
+    .eyebrow {
+      color: #a9a2ff;
+      font-size: .73rem;
+      font-weight: 800;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 8px 0 5px;
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      letter-spacing: -.055em;
+    }
+
+    .subtitle { margin: 0; color: #a9abc3; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .stat, .panel {
+      border: 1px solid #ffffff12;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #1d203bdb, #17192edb);
+      box-shadow: 0 14px 40px #07081340;
+    }
+
+    .stat { padding: 15px 18px; text-align: center; }
+    .stat-label { color: #a9abc3; font-size: .78rem; }
+    .stat-value { display: block; margin-top: 4px; font-size: clamp(1.05rem, 3vw, 1.45rem); font-weight: 800; }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .mine {
+      display: flex;
+      min-height: 390px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .mine::before {
+      content: "";
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: #7d68ff20;
+      filter: blur(40px);
+      pointer-events: none;
+    }
+
+    .ore-button {
+      position: relative;
+      display: grid;
+      width: 190px;
+      height: 190px;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 27%, #d0c4ff, #9478ff 28%, #5745b4 60%, #292455 78%);
+      box-shadow: 0 0 25px #927aff75, 0 0 70px #735cff3b, inset -12px -18px 24px #15132e80, inset 8px 8px 18px #ffffff50;
+      cursor: pointer;
+      transition: transform .12s, filter .12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ore-button:hover { filter: brightness(1.12); transform: scale(1.035); }
+    .ore-button:active { transform: scale(.94); }
+    .ore-button:focus-visible { outline: 3px solid #c9c1ff; outline-offset: 6px; }
+    .ore-icon { font-size: 5.3rem; filter: drop-shadow(0 5px 5px #17132d); user-select: none; }
+
+    .click-hint { position: relative; margin: 22px 0 4px; font-weight: 750; }
+    .click-subhint { position: relative; margin: 0; color: #a9abc3; font-size: .88rem; }
+
+    .boost-button {
+      position: relative;
+      margin-top: 18px;
+      padding: 10px 16px;
+      color: #fff4bd;
+      font-weight: 800;
+      border: 1px solid #ffd66b66;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #a8621f55, #e1a72a24);
+      cursor: pointer;
+      transition: filter .15s, transform .15s;
+    }
+
+    .boost-button:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-1px); }
+    .boost-button:disabled { cursor: not-allowed; opacity: .58; }
+    .boost-status { position: relative; min-height: 1.2em; margin: 7px 0 0; color: #d7ceff; font-size: .78rem; }
+
+    .upgrades { padding: 20px; }
+    .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    h2 { margin: 0; font-size: 1.15rem; }
+    .section-heading span { color: #9c9eb8; font-size: .76rem; }
+
+    .upgrade-list { display: grid; gap: 10px; margin-top: 15px; }
+
+    .upgrade {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 11px;
+      width: 100%;
+      padding: 12px;
+      color: inherit;
+      text-align: left;
+      border: 1px solid #ffffff12;
+      border-radius: 13px;
+      background: #ffffff06;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+
+    .upgrade:hover:not(:disabled) { transform: translateY(-1px); border-color: #9d8aff70; background: #8d78ff13; }
+    .upgrade:disabled { cursor: not-allowed; opacity: .48; }
+    .upgrade-icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 11px; background: #9380ff1c; font-size: 1.35rem; }
+    .upgrade-name { display: block; font-size: .88rem; font-weight: 800; }
+    .upgrade-description { display: block; margin-top: 3px; color: #a9abc3; font-size: .73rem; line-height: 1.35; }
+    .upgrade-price { white-space: nowrap; color: #d7ceff; font-size: .8rem; font-weight: 800; }
+    .upgrade-level { color: #8f91ac; font-size: .7rem; font-weight: 600; }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 16px;
+      color: #81839e;
+      font-size: .74rem;
+    }
+
+    .footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .save-status { color: #a9abc3; }
+
+    .save, .reset {
+      padding: 7px 10px;
+      border: 1px solid #ffffff18;
+      border-radius: 9px;
+      background: #ffffff07;
+      cursor: pointer;
+    }
+    .save { color: #d7ceff; }
+    .save:hover { border-color: #9d8aff70; background: #8d78ff13; }
+    .reset { color: #a9abc3; }
+    .reset:hover { color: #fff; border-color: #ff829866; }
+
+    @media (max-width: 520px) {
+      .footer { align-items: flex-start; flex-direction: column; }
+      .footer-actions { width: 100%; justify-content: space-between; }
+    }
+
+    .float-text {
+      position: absolute;
+      z-index: 2;
+      color: #fff4a8;
+      font-weight: 900;
+      font-size: 1.1rem;
+      pointer-events: none;
+      animation: float-up .8s ease-out forwards;
+      text-shadow: 0 2px 8px #000;
+    }
+
+    @keyframes float-up {
+      from { opacity: 1; transform: translate(-50%, 0) scale(.8); }
+      to { opacity: 0; transform: translate(-50%, -75px) scale(1.1); }
+    }
+
+    @media (max-width: 720px) {
+      .game { padding-top: 26px; }
+      .main { grid-template-columns: 1fr; }
+      .mine { min-height: 320px; }
+      .ore-button { width: 160px; height: 160px; }
+      .ore-icon { font-size: 4.5rem; }
+    }
+
+    @media (max-width: 430px) {
+      .game { width: min(100% - 20px, 500px); }
+      .stats { gap: 7px; }
+      .stat { padding: 12px 5px; }
+      .stat-label { font-size: .69rem; }
+      .upgrades { padding: 15px; }
+      .upgrade { grid-template-columns: 38px minmax(0, 1fr) auto; gap: 8px; padding: 10px 8px; }
+      .upgrade-icon { width: 36px; height: 36px; }
+      .upgrade-price { font-size: .72rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="game">
+    <header>
+      <div class="eyebrow">Przygoda w kosmosie</div>
+      <h1>☄️ Kosmiczna Kopalnia</h1>
+      <p class="subtitle">Wydobywaj kosmiczny pył i rozbuduj swoją kopalnię!</p>
+    </header>
+
+    <section class="stats" aria-label="Statystyki kopalni">
+      <div class="stat"><span class="stat-label">Kosmiczny pył</span><strong class="stat-value" id="dust">0</strong></div>
+      <div class="stat"><span class="stat-label">Na kliknięcie</span><strong class="stat-value" id="per-click">1</strong></div>
+      <div class="stat"><span class="stat-label">Na sekundę</span><strong class="stat-value" id="per-second">0</strong></div>
+    </section>
+
+    <section class="main">
+      <div class="panel mine" id="mine">
+        <button class="ore-button" id="mine-button" aria-label="Wydobądź kosmiczny pył">
+          <span class="ore-icon" aria-hidden="true">💎</span>
+        </button>
+        <p class="click-hint">Klikaj kryształ, aby wydobywać!</p>
+        <p class="click-subhint">Każde ulepszenie przybliża Cię do gwiazd</p>
+        <button class="boost-button" id="boost-button" type="button">⚡ Aktywuj boost x2</button>
+        <p class="boost-status" id="boost-status" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="panel upgrades">
+        <div class="section-heading">
+          <h2>Ulepszenia</h2>
+          <span>Rozwijaj swoją kopalnię</span>
+        </div>
+        <div class="upgrade-list" id="upgrade-list"></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Postęp zapisuje się automatycznie ✨</span>
+      <div class="footer-actions">
+        <span class="save-status" id="save-status" role="status" aria-live="polite"></span>
+        <button class="save" id="save-button" type="button">Zapisz postęp</button>
+        <button class="reset" id="reset-button" type="button">Zacznij od nowa</button>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    const SAVE_KEY = "kosmiczna-kopalnia-save";
+    const upgrades = [
+      { id: "pickaxe", icon: "⛏️", name: "Plazmowy kilof", description: "+1 pyłu za kliknięcie", baseCost: 15, click: 1, passive: 0 },
+      { id: "drone", icon: "🤖", name: "Górniczy dron", description: "+1 pyłu na sekundę", baseCost: 50, click: 0, passive: 1 },
+      { id: "laser", icon: "🔦", name: "Laser kwantowy", description: "+5 pyłu za kliknięcie", baseCost: 250, click: 5, passive: 0 },
+      { id: "ship", icon: "🚀", name: "Statek wydobywczy", description: "+8 pyłu na sekundę", baseCost: 600, click: 0, passive: 8 },
+      { id: "nanobots", icon: "🦠", name: "Nanoboty górnicze", description: "+15 pyłu za kliknięcie", baseCost: 1200, click: 15, passive: 0 },
+      { id: "reactor", icon: "☢️", name: "Reaktor gwiezdny", description: "+25 pyłu na sekundę", baseCost: 2500, click: 0, passive: 25 },
+      { id: "satellite", icon: "🛰️", name: "Satelita wydobywczy", description: "+50 pyłu za kliknięcie", baseCost: 8000, click: 50, passive: 0 },
+      { id: "portal", icon: "🌀", name: "Portal międzygwiezdny", description: "+100 pyłu na sekundę", baseCost: 20000, click: 0, passive: 100 }
+    ];
+
+    const defaultState = () => ({
+      dust: 0,
+      totalEarned: 0,
+      levels: Object.fromEntries(upgrades.map(item => [item.id, 0])),
+      boostEndsAt: 0,
+      boostCooldownEndsAt: 0,
+      savedAt: Date.now()
+    });
+
+    function loadState() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(SAVE_KEY));
+        if (!stored || typeof stored !== "object") return defaultState();
+        const state = defaultState();
+        state.dust = Number.isFinite(stored.dust) && stored.dust >= 0 ? stored.dust : 0;
+        state.totalEarned = Number.isFinite(stored.totalEarned) && stored.totalEarned >= 0 ? stored.totalEarned : state.dust;
+        state.boostEndsAt = Number.isFinite(stored.boostEndsAt) && stored.boostEndsAt > 0 ? stored.boostEndsAt : 0;
+        state.boostCooldownEndsAt = Number.isFinite(stored.boostCooldownEndsAt) && stored.boostCooldownEndsAt > 0 ? stored.boostCooldownEndsAt : 0;
+        for (const item of upgrades) {
+          const level = stored.levels && stored.levels[item.id];
+          state.levels[item.id] = Number.isSafeInteger(level) && level >= 0 ? level : 0;
+        }
+        const elapsed = Number.isFinite(stored.savedAt) ? Math.min(8 * 60 * 60, Math.max(0, (Date.now() - stored.savedAt) / 1000)) : 0;
+        const now = Date.now();
+        const elapsedStart = now - elapsed * 1000;
+        const boostedSeconds = Math.max(0, Math.min(now, state.boostEndsAt) - elapsedStart) / 1000;
+        const normalSeconds = elapsed - boostedSeconds;
+        const offlineIncome = getPassiveRate(state) * (normalSeconds + boostedSeconds * 2);
+        state.dust += offlineIncome;
+        state.totalEarned += offlineIncome;
+        return state;
+      } catch (error) {
+        console.warn("Nie udało się wczytać zapisu gry:", error);
+        return defaultState();
+      }
+    }
+
+    let state = loadState();
+    const dustDisplay = document.getElementById("dust");
+    const clickDisplay = document.getElementById("per-click");
+    const passiveDisplay = document.getElementById("per-second");
+    const upgradeList = document.getElementById("upgrade-list");
+    const saveStatus = document.getElementById("save-status");
+    const boostButton = document.getElementById("boost-button");
+    const boostStatus = document.getElementById("boost-status");
+    const BOOST_DURATION = 30 * 1000;
+    const BOOST_COOLDOWN = 90 * 1000;
+    let lastSaved = 0;
+
+    function getClickPower(current = state) {
+      return 1 + upgrades.reduce((sum, item) => sum + item.click * current.levels[item.id], 0);
+    }
+
+    function getPassiveRate(current = state) {
+      return upgrades.reduce((sum, item) => sum + item.passive * current.levels[item.id], 0);
+    }
+
+    function isBoostActive(now = Date.now()) {
+      return state.boostEndsAt > now;
+    }
+
+    function getBoostMultiplier(now = Date.now()) {
+      return isBoostActive(now) ? 2 : 1;
+    }
+
+    function getCost(item) {
+      return Math.floor(item.baseCost * Math.pow(1.16, state.levels[item.id]));
+    }
+
+    function formatNumber(value) {
+      if (value < 1000) return Number.isInteger(value) ? String(value) : value.toFixed(1);
+      const units = ["tys.", "mln", "mld", "bln"];
+      let unit = -1;
+      let amount = value;
+      while (amount >= 1000 && unit < units.length - 1) {
+        amount /= 1000;
+        unit += 1;
+      }
+      return `${amount.toFixed(amount < 10 ? 1 : 0)} ${units[unit]}`;
+    }
+
+    function save() {
+      try {
+        state.savedAt = Date.now();
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+        lastSaved = Date.now();
+        saveStatus.textContent = `Zapisano ${new Date(lastSaved).toLocaleTimeString("pl-PL")}`;
+        return true;
+      } catch (error) {
+        console.warn("Nie udało się zapisać postępu gry:", error);
+        saveStatus.textContent = "Nie udało się zapisać postępu.";
+        return false;
+      }
+    }
+
+    function render() {
+      const now = Date.now();
+      const multiplier = getBoostMultiplier(now);
+      dustDisplay.textContent = formatNumber(state.dust);
+      clickDisplay.textContent = formatNumber(getClickPower() * multiplier);
+      passiveDisplay.textContent = formatNumber(getPassiveRate() * multiplier);
+      if (isBoostActive(now)) {
+        boostButton.disabled = true;
+        boostButton.textContent = `⚡ Boost x2: ${Math.ceil((state.boostEndsAt - now) / 1000)} s`;
+        boostStatus.textContent = "Wydobycie jest podwojone!";
+      } else if (state.boostCooldownEndsAt > now) {
+        boostButton.disabled = true;
+        boostButton.textContent = `⚡ Odnowienie: ${Math.ceil((state.boostCooldownEndsAt - now) / 1000)} s`;
+        boostStatus.textContent = "Boost x2 podwaja kliknięcia i wydobycie pasywne na 30 sekund.";
+      } else {
+        boostButton.disabled = false;
+        boostButton.textContent = "⚡ Aktywuj boost x2";
+        boostStatus.textContent = "Podwaja kliknięcia i wydobycie pasywne na 30 sekund.";
+      }
+      for (const item of upgrades) {
+        const button = document.getElementById(`upgrade-${item.id}`);
+        const cost = getCost(item);
+        button.disabled = state.dust < cost;
+        button.querySelector(".upgrade-price").textContent = `💠 ${formatNumber(cost)}`;
+        button.querySelector(".upgrade-level").textContent = `Poz. ${state.levels[item.id]}`;
+      }
+    }
+
+    function createUpgradeButtons() {
+      for (const item of upgrades) {
+        const button = document.createElement("button");
+        button.className = "upgrade";
+        button.id = `upgrade-${item.id}`;
+        button.type = "button";
+        button.innerHTML = `
+          <span class="upgrade-icon" aria-hidden="true">${item.icon}</span>
+          <span>
+            <span class="upgrade-name">${item.name}</span>
+            <span class="upgrade-description">${item.description}<br><span class="upgrade-level"></span></span>
+          </span>
+          <span class="upgrade-price"></span>`;
+        button.addEventListener("click", () => buyUpgrade(item));
+        upgradeList.appendChild(button);
+      }
+    }
+
+    function showFloatText(event, amount) {
+      const mine = document.getElementById("mine");
+      const bounds = mine.getBoundingClientRect();
+      const text = document.createElement("span");
+      text.className = "float-text";
+      text.textContent = `+${formatNumber(amount)} 💠`;
+      text.style.left = `${event.clientX ? event.clientX - bounds.left : bounds.width / 2}px`;
+      text.style.top = `${event.clientY ? event.clientY - bounds.top : bounds.height / 2}px`;
+      mine.appendChild(text);
+      text.addEventListener("animationend", () => text.remove(), { once: true });
+    }
+
+    function mineOre(event) {
+      const amount = getClickPower() * getBoostMultiplier();
+      state.dust += amount;
+      state.totalEarned += amount;
+      showFloatText(event, amount);
+      render();
+    }
+
+    function buyUpgrade(item) {
+      const cost = getCost(item);
+      if (state.dust < cost) return;
+      state.dust -= cost;
+      state.levels[item.id] += 1;
+      render();
+      save();
+    }
+
+    function activateBoost() {
+      const now = Date.now();
+      if (state.boostEndsAt > now || state.boostCooldownEndsAt > now) return;
+      state.boostEndsAt = now + BOOST_DURATION;
+      state.boostCooldownEndsAt = now + BOOST_COOLDOWN;
+      render();
+      save();
+    }
+
+    document.getElementById("mine-button").addEventListener("click", mineOre);
+    boostButton.addEventListener("click", activateBoost);
+    document.getElementById("save-button").addEventListener("click", save);
+    document.getElementById("reset-button").addEventListener("click", () => {
+      if (!window.confirm("Na pewno chcesz wyzerować cały postęp?")) return;
+      state = defaultState();
+      save();
+      render();
+    });
+
+    createUpgradeButtons();
+    render();
+    window.setInterval(() => {
+      const income = getPassiveRate() * getBoostMultiplier();
+      if (income > 0) {
+        state.dust += income;
+        state.totalEarned += income;
+      }
+      render();
+      if (Date.now() - lastSaved >= 5000) save();
+    }, 1000);
+    window.addEventListener("beforeunload", save);
+  </script>
+</body>
+</html>
