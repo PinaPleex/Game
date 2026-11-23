@@ -1,2 +1,2 @@
 # Game
-https://pinapleex.github.io/Game/index.html
+https://pinapleex.github.io/Game/Kosmicznakopalnia/kopalnia.html
